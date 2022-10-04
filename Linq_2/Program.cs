@@ -24,19 +24,35 @@ foreach(var voiture in voitureAvecQuatrePortesOuPlus)
     Console.WriteLine($"{voiture}");
 }*/
 
+/*
 // voitures les plus puissantes
 //.Skip à la place ou avant .Take pour ignorer les premières occurences (nb au choix) (essentiellement de la pagination), on peut aussi faire .take avant .skip mais il faut faire attention
-//voitures.OrderByDescending(v => v.Puissance).Take(10).Select(v => $"{v.Maker} { v.Modele} | {v.Puissance}").ToList().ForEach(v => Console.WriteLine(v));
+voitures.OrderByDescending(v => v.Puissance).Take(10).Select(v => $"{v.Maker} { v.Modele} | {v.Puissance}").ToList().ForEach(v => Console.WriteLine(v));
+*/
 
+/*
 //afficher le nb de modèles par marque construit après 1995
 voitures.Where(v => v.Annee > 1995).GroupBy(v => v.Maker).Select(v => v.Count()).ToList().ForEach(v => Console.WriteLine(v));
 Console.WriteLine("---------------------------------Fin version perso---------------------------------");
 //version prof
 voitures//.Where(v => v.Annee > 1995)
         .GroupBy(v => v.Maker)
-        .Select(v => new { v.Key, NombreModeles = v.Where(v => v.Annee > 1995).Count() })
+        //.Select(v => new { v.Key, NombreModeles = v.Where(v => v.Annee > 1995).Count() })
+        .Select(v => new { v.Key, NombreModeles = v.Count(v => v.Annee > 1995), carAttributes = v.Select(v => v) })
         .ToList()
-        .ForEach(i => Console.WriteLine($"{i.Key} : {i.NombreModeles}"));
+        .ForEach(i => 
+        {   //varAttributes possède toutes les infos de la voiture, on utilise le .select pour récupérer une information précise
+            //le string.join nécessite une projection pour le modèle de voiture
+            Console.WriteLine($"{i.Key} : {i.NombreModeles} {string.Join(" - ", i.carAttributes.Select(v => v.Modele) )}");
+        });
+*/
+//afficher les constructeus qui ont au moins 2 modèles de puissance >= 400 et la quantité de modèles par constructeur
+voitures.Where(v => v.Puissance >= 400)
+        .GroupBy(v => v.Maker)
+        .Select(v => new { Constructeur = v.Key, NbVoitures = v.Count() }) //pas besoin de mettre un prédicat dans le count pcq on a 
+        .Where(constr => constr.NbVoitures >= 2)                           //déjà supprimé les voitures avec <400 hp
+        .ToList()
+        .ForEach(constr => Console.WriteLine($"{constr.Constructeur} : {constr.NbVoitures}"));
 
 class Voiture
 {
