@@ -32,8 +32,11 @@ foreach(var voiture in voitureAvecQuatrePortesOuPlus)
 voitures.Where(v => v.Annee > 1995).GroupBy(v => v.Maker).Select(v => v.Count()).ToList().ForEach(v => Console.WriteLine(v));
 Console.WriteLine("---------------------------------Fin version perso---------------------------------");
 //version prof
-voitures.GroupBy(v => v.Maker).Select(v => new { v.Key, NombreModeles = v.Count() }).ToList()
-    .ForEach(i => Console.WriteLine($"{i.Key} : {i.NombreModeles}"));
+voitures//.Where(v => v.Annee > 1995)
+        .GroupBy(v => v.Maker)
+        .Select(v => new { v.Key, NombreModeles = v.Where(v => v.Annee > 1995).Count() })
+        .ToList()
+        .ForEach(i => Console.WriteLine($"{i.Key} : {i.NombreModeles}"));
 
 class Voiture
 {
