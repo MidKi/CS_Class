@@ -28,13 +28,12 @@ foreach(var voiture in voitureAvecQuatrePortesOuPlus)
 //.Skip à la place ou avant .Take pour ignorer les premières occurences (nb au choix) (essentiellement de la pagination), on peut aussi faire .take avant .skip mais il faut faire attention
 //voitures.OrderByDescending(v => v.Puissance).Take(10).Select(v => $"{v.Maker} { v.Modele} | {v.Puissance}").ToList().ForEach(v => Console.WriteLine(v));
 
-//afficher le nb de modèles par marque construit après 1995 .GroupBy(v => v.Maker).Select(v => v.Count())
+//afficher le nb de modèles par marque construit après 1995
 voitures.Where(v => v.Annee > 1995).GroupBy(v => v.Maker).Select(v => v.Count()).ToList().ForEach(v => Console.WriteLine(v));
-
-/*foreach(var car in cars)
-{
-    Console.WriteLine(car);
-}*/
+Console.WriteLine("---------------------------------Fin version perso---------------------------------");
+//version prof
+voitures.GroupBy(v => v.Maker).Select(v => new { v.Key, NombreModeles = v.Count() }).ToList()
+    .ForEach(i => Console.WriteLine($"{i.Key} : {i.NombreModeles}"));
 
 class Voiture
 {
