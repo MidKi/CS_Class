@@ -30,8 +30,13 @@
 //Classe Plat
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+
+
+Console.WriteLine("hello");
 
 class Plat
 {
@@ -80,12 +85,19 @@ class RecettesContext : DbContext
     }
 }
 
-//Fabrique de classe
+//Fabrique de classe, sera intégré au système dans la partie web et pas à écrire soi-même
 class RecettesContextFabric : IDesignTimeDbContextFactory<RecettesContext>
 {
-    public RecettesContext CreateDbContext(string[] args)
+    public RecettesContext CreateDbContext(string[]? args = null)
     {
-        throw new NotImplementedException();
+        var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+
+        var optionsBuilder = new DbContextOptionsBuilder<RecettesContext>();
+
+        optionsBuilder//.UseLoggerFactory(LoggerFactory.Create(optionsBuilder => optionsBuilder.AddConsole()));
+                      .UseSqlServer(config["ConnectionStrings:peepoConnection"]);   //peepoConnection peut être n'importe quoi tant que ça
+                                                                                    //correspond au json
+        return new RecettesContext(optionsBuilder.Options);
     }
 }
 #endregion classes
