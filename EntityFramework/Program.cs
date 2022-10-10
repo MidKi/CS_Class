@@ -26,7 +26,7 @@
 //les tables, ajouter, supprimer, modifier des données, ...
 
 
-#region classes
+
 //Classe Plat
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
@@ -34,13 +34,62 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Xml.Xsl;
+
+var factory = new RecettesContextFabric();
+using var  context = factory.CreateDbContext(); // libération des ressources à la fermeture de l'app
+/*
+Console.WriteLine("On ajoute des céréales au petit déjeuner");
+var cereales = new Plat { Titre = "Petit déjeuner aux céréales", 
+                          Notes = "Avec un peu de lait c'est encore meilleur",
+                          Avis = 4                        
+};*/
 
 
-Console.WriteLine("hello");
+//ajout dans la db
+//context.Plats.Add(cereales);
+//await context.SaveChangesAsync();
 
+/*
+context.Plats.Remove(cereales);
+await context.SaveChangesAsync();
+*/
+
+//changement dans la db, faisable car on enregistre le pointeur vers ces données
+//cereales.Avis = 5;
+//await context.SaveChangesAsync();
+
+//vérification avis céréales
+/*Console.WriteLine("Vérification avis céréales");
+var plat = await context.Plats.Where(plat => plat.Titre.Contains("céréales")).ToListAsync();
+
+if(plat.Count != 1)
+{
+    Console.WriteLine("pas de céréales");
+}
+else
+{
+    Console.WriteLine($"le plat de céréales a {plat[0].Avis} avis/étoiles");
+}*/
+
+//pates
+var pates = new Plat
+{
+    Titre = "Petit déjeuner aux pâtes mais sans sauce",
+    Notes = "Avec un peu de sauce c'est encore meilleur!",
+    Avis = 1
+};
+
+context.Plats.Add(pates);
+
+Console.WriteLine($"Plat de pate {pates.Id} pas encore ajouté");
+await context.SaveChangesAsync();
+Console.WriteLine($"Plat de pates {pates.Id} ajouté");
+
+#region classes
 class Plat
 {
-    public int IdPlat { get; set; } //primary key par convention (.NET détecte tout seul que Id = clé primaire -> auto incrémentation)
+    public int Id { get; set; } //primary key par convention (.NET détecte tout seul que Id = clé primaire -> auto incrémentation)
     
     [MaxLength(100)]
     public string Titre { get; set; } = String.Empty;   //vide par défaut, pas null mais obligatoire
@@ -94,7 +143,7 @@ class RecettesContextFabric : IDesignTimeDbContextFactory<RecettesContext>
 
         var optionsBuilder = new DbContextOptionsBuilder<RecettesContext>();
 
-        optionsBuilder//.UseLoggerFactory(LoggerFactory.Create(optionsBuilder => optionsBuilder.AddConsole()));
+        optionsBuilder.UseLoggerFactory(LoggerFactory.Create(optionsBuilder => optionsBuilder.AddConsole()))//;
                       .UseSqlServer(config["ConnectionStrings:peepoConnection"]);   //peepoConnection peut être n'importe quoi tant que ça
                                                                                     //correspond au json
         return new RecettesContext(optionsBuilder.Options);
