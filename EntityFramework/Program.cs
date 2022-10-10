@@ -22,9 +22,14 @@
  */
 
 //Plusieurs approches possibles (code first, db first et model first)
+//DBContext: version type d'une connexion à noter DB, contient les points d'entrée pour interroger la DB,
+//les tables, ajouter, supprimer, modifier des données, ...
 
 
+#region classes
 //Classe Plat
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -40,11 +45,11 @@ class Plat
     
     public int? Avis { get; set; }
 
-    public List<Ingredients> Ingredients { get; set; } = new(); //force une liste vide
+    public List<Ingredient> Ingredients { get; set; } = new(); //force une liste vide
 }
 
 //class Ingredients
-class Ingredients
+class Ingredient
 {
     public int Id { get; set; }
 
@@ -57,7 +62,30 @@ class Ingredients
     public decimal Quantite { get; set; }
 
     //stranger key vers Plat, on part du principe qu'un ingrédient n'est utilisé que dans un plat
-    
+    public int PlatId { get; set; }
+
     //propriété de navigation, permet d'atteindre plat (par ex: ingerdient.plat.proprieteDePlat
     public Plat? Plat { get; set; }
 }
+
+class RecettesContext : DbContext
+{
+    public DbSet<Ingredient> Ingredients { get; set; }
+
+    public DbSet<Plat> Plats { get; set; }
+
+    public RecettesContext(DbContextOptions<RecettesContext> options) : base(options)
+    {
+        
+    }
+}
+
+//Fabrique de classe
+class RecettesContextFabric : IDesignTimeDbContextFactory<RecettesContext>
+{
+    public RecettesContext CreateDbContext(string[] args)
+    {
+        throw new NotImplementedException();
+    }
+}
+#endregion classes
