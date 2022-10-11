@@ -24,7 +24,8 @@
 //Plusieurs approches possibles (code first, db first et model first)
 //DBContext: version type d'une connexion à noter DB, contient les points d'entrée pour interroger la DB,
 //les tables, ajouter, supprimer, modifier des données, ...
-
+//Entity Framework repose sur le pattern Unit of Work
+//Change Tracking sui va indiquer au système qu'est-ce qui a été modifié, et les requêtes seront générées en fonction de ça
 
 
 //Classe Plat
@@ -73,6 +74,7 @@ else
 }*/
 
 //pates
+/*
 var pates = new Plat
 {
     Titre = "Petit déjeuner aux pâtes mais sans sauce",
@@ -85,6 +87,19 @@ context.Plats.Add(pates);
 Console.WriteLine($"Plat de pate {pates.Id} pas encore ajouté");
 await context.SaveChangesAsync();
 Console.WriteLine($"Plat de pates {pates.Id} ajouté");
+*/
+
+var nvPlat = new Plat
+{
+    Titre = "Pipo",
+    Notes = "Inzhagi"
+};
+context.Plats.Add(nvPlat);
+await context.SaveChangesAsync();
+
+nvPlat.Notes = "Internet cassé";
+await context.SaveChangesAsync();
+
 
 #region classes
 class Plat
