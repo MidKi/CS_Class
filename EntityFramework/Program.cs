@@ -89,6 +89,7 @@ await context.SaveChangesAsync();
 Console.WriteLine($"Plat de pates {pates.Id} ajouté");
 */
 
+/*
 var nvPlat = new Plat
 {
     Titre = "Pipo",
@@ -99,6 +100,14 @@ await context.SaveChangesAsync();
 
 nvPlat.Notes = "Internet cassé";
 await context.SaveChangesAsync();
+*/
+
+static async Task EntityStates(RecettesContextFabric factory)
+{
+    using var context = factory.CreateDbContext();
+    var nvPlat = new Plat { Titre= "John", Notes="Wick" };
+    var state = context.Entry(nvPlat).State;
+}
 
 
 #region classes
