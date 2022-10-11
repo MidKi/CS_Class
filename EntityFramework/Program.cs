@@ -184,17 +184,45 @@ static async Task NoTracking(RecettesContextFabric factory)
 static async Task RawSql(RecettesContextFabric factory)
 {
     using var context = factory.CreateDbContext();
+
+    var filtre = "%e' ; DELETE FROM Plats; -- ";
     var plats = await context.Plats
-                .FromSqlRaw("SELECT * FROM Plats")
+        //pour requête sans param
+                .FromSqlRaw("SELECT * FROM Plats WHERE Notes LIKE '" + filtre + "'") //INJECTION SQL POSSIBLE, NE PAS FAIRE
                 .ToArrayAsync();
 
-    var filtre = "%e";
     plats = await context.Plats
+        //pour requête avec param
             .FromSqlInterpolated($"SELECT * FROM Plats WHERE Notes LIKE {filtre}")
             .ToArrayAsync();
+
+        //pour INSERT/UPDATE/DELETE
+    await context.Database.ExecuteSqlRawAsync("DELETE FROM Plat WHERE Id NOT IN (SELECT PlatId FROM Ingredients)");
 }
 
+static async Task Transactions(RecettesContextFabric factory)
+{
+    using var context = factory.CreateDbContext();
+    context.Plats.Add(new Plat { Titre = "Elden", Notes = "Ring" });
+    await context.SaveChangesAsync();
 
+    //si une requête parmis plusieurs plante, on annule tout
+    using var transaction = await context.Database.BeginTransactionAsync();
+
+    //ne fonctionnera pas, l'erreur a annulé le Commit et donc rien n'a été envoyé  
+    try
+    {
+        await context.SaveChangesAsync();
+        await context.Database.ExecuteSqlRawAsync("SELECT 1/0 as CPasBien"); // erreur
+        await transaction.CommitAsync();
+    }
+    catch(Exception ex)
+    {
+        Console.WriteLine(ex.ToString());
+    }
+
+
+}
 
 #region classes
 class Plat
