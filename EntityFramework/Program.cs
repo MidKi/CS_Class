@@ -31,6 +31,7 @@
 //Classe Plat
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
@@ -40,29 +41,29 @@ using System.Xml.Xsl;
 
 var factory = new RecettesContextFabric();
 using var  context = factory.CreateDbContext(); // libération des ressources à la fermeture de l'app
-/*
+
 Console.WriteLine("On ajoute des céréales au petit déjeuner");
 var cereales = new Plat { Titre = "Petit déjeuner aux céréales", 
                           Notes = "Avec un peu de lait c'est encore meilleur",
                           Avis = 4                        
-};*/
+};
 
 
 //ajout dans la db
-//context.Plats.Add(cereales);
-//await context.SaveChangesAsync();
+context.Plats.Add(cereales);
+await context.SaveChangesAsync();
 
-/*
+
 context.Plats.Remove(cereales);
 await context.SaveChangesAsync();
-*/
+
 
 //changement dans la db, faisable car on enregistre le pointeur vers ces données
-//cereales.Avis = 5;
-//await context.SaveChangesAsync();
+cereales.Avis = 5;
+await context.SaveChangesAsync();
 
 //vérification avis céréales
-/*Console.WriteLine("Vérification avis céréales");
+Console.WriteLine("Vérification avis céréales");
 var plat = await context.Plats.Where(plat => plat.Titre.Contains("céréales")).ToListAsync();
 
 if(plat.Count != 1)
@@ -72,10 +73,10 @@ if(plat.Count != 1)
 else
 {
     Console.WriteLine($"le plat de céréales a {plat[0].Avis} avis/étoiles");
-}*/
+}
 
 //pates
-/*
+
 var pates = new Plat
 {
     Titre = "Petit déjeuner aux pâtes mais sans sauce",
@@ -88,9 +89,9 @@ context.Plats.Add(pates);
 Console.WriteLine($"Plat de pate {pates.Id} pas encore ajouté");
 await context.SaveChangesAsync();
 Console.WriteLine($"Plat de pates {pates.Id} ajouté");
-*/
 
-/*
+
+
 var nvPlat = new Plat
 {
     Titre = "Pipo",
@@ -101,17 +102,19 @@ await context.SaveChangesAsync();
 
 nvPlat.Notes = "Internet cassé";
 await context.SaveChangesAsync();
-*/
-
 
 await EntityStates(factory);
+await ChangeTracking(factory);
+await AttachEntities(factory);
+await NoTracking(factory);
+await RawSql(factory);
 
 static async Task EntityStates(RecettesContextFabric factory)
 {
-    using var context = factory.CreateDbContext();
+    using var context = factory.CreateDbContext();              //createdbcontext contient les plats et la db (+-)
     var nvPlat = new Plat { Titre= "John", Notes="Wick" };
     var state = context.Entry(nvPlat).State;
-    //détaché = objet en mémoir mais inconnue de la DB et du context
+    //détaché = objet en mémoire mais inconnue de la DB et du context
     context.Plats.Add(nvPlat);
     state = context.Entry(state).State;
     //ajouté = objet en mémoire mais inconnu en DB et connu dans le context
@@ -120,7 +123,77 @@ static async Task EntityStates(RecettesContextFabric factory)
     //inchangé = objet en mémoire idenitque à la DB
     state = context.Entry(state).State;
     //modifié = objet en mémoire diférent de celui en DB
+    context.Plats.Remove(nvPlat);
+    state = context.Entry(nvPlat).State;
+    //supprimé = objet en mémoire supprimé par rapport à la DB
+    //si on Add nvPlat on retouren à l'état détaché
 }
+
+static async Task ChangeTracking(RecettesContextFabric factory)
+{
+    var context = factory.CreateDbContext();
+    var nvPlat = new Plat { Titre = "Elden", Notes = "Ring" };
+    context.Plats.Add(nvPlat);
+    await context.SaveChangesAsync();
+    nvPlat.Notes = "Lord";
+
+    var entry = context.Entry(nvPlat);
+
+    //SingleAsync vérifie d'abord le context, s'il n'y a rien alors il va check dans la DB
+    //On peut créer autant de context qu'on veut -> chaque context a son propre système de tracking (état, OriginalValue, ...)
+    //En créer plusieurs peut vite consommer beaucoup de mémoire
+    //Pour forcer le check dans al DB, soit on crée un nouveau context, soit on désactive le tracking/détache les données
+    //code managé: code controlé par le manager (machine virtuelle)
+
+    //Ici on interroge la mémoire, ici l'objet existe dans la mémoire
+    var originalValue = entry.OriginalValues[nameof(Plat.Notes)].ToString();
+    var platInDB = await context.Plats.SingleAsync(p => p.Id == nvPlat.Id);
+
+    //Ici on interroge la DB car le context est vide, l'Id nvPlat ne se trouve pas dans context2 mais existe dans la DB
+    using var context2 = factory.CreateDbContext();
+    var platInDB2 = await context.Plats.SingleAsync(p => p.Id == nvPlat.Id);
+}
+
+static async Task AttachEntities(RecettesContextFabric factory)
+{
+    var context = factory.CreateDbContext();
+    var nvPlat = new Plat { Titre = "Elden", Notes = "Ring" };
+
+    context.Plats.Add(nvPlat);
+
+    await context.SaveChangesAsync();
+
+    //faire oublier l'objet à EF (entity framework), permet de frocer une interrogation à la DB
+    //context.Entry(nvPlat).State = EntityState.Detached;
+
+    var state = context.Entry(nvPlat).State;
+    context.Plats.Update(nvPlat);
+    state = context.Entry(nvPlat).State;
+    await context.SaveChangesAsync();
+}
+
+static async Task NoTracking(RecettesContextFabric factory)
+{
+    using var context = factory.CreateDbContext();
+
+    //Select * From Plats
+    var Plats = await context.Plats.AsNoTracking().ToListAsync(); //pas de tracking = détaché
+    var state = context.Entry(Plats[0]).State;
+}
+
+static async Task RawSql(RecettesContextFabric factory)
+{
+    using var context = factory.CreateDbContext();
+    var plats = await context.Plats
+                .FromSqlRaw("SELECT * FROM Plats")
+                .ToArrayAsync();
+
+    var filtre = "%e";
+    plats = await context.Plats
+            .FromSqlInterpolated($"SELECT * FROM Plats WHERE Notes LIKE {filtre}")
+            .ToArrayAsync();
+}
+
 
 
 #region classes
