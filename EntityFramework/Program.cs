@@ -35,6 +35,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.InteropServices.ObjectiveC;
 using System.Xml.Xsl;
 
 var factory = new RecettesContextFabric();
@@ -102,11 +103,23 @@ nvPlat.Notes = "Internet cassé";
 await context.SaveChangesAsync();
 */
 
+
+await EntityStates(factory);
+
 static async Task EntityStates(RecettesContextFabric factory)
 {
     using var context = factory.CreateDbContext();
     var nvPlat = new Plat { Titre= "John", Notes="Wick" };
     var state = context.Entry(nvPlat).State;
+    //détaché = objet en mémoir mais inconnue de la DB et du context
+    context.Plats.Add(nvPlat);
+    state = context.Entry(state).State;
+    //ajouté = objet en mémoire mais inconnu en DB et connu dans le context
+    await context.SaveChangesAsync();
+    state = context.Entry(nvPlat).State;
+    //inchangé = objet en mémoire idenitque à la DB
+    state = context.Entry(state).State;
+    //modifié = objet en mémoire diférent de celui en DB
 }
 
 
