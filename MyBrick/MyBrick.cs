@@ -53,7 +53,7 @@ namespace MyBrick
 
             var optionsBuilder = new DbContextOptionsBuilder<BrickContext>();
 
-            optionsBuilder.UseSqlServer(config["ConnectionStrings:peepoConnection"]);
+            optionsBuilder.UseSqlServer(config["ConnectionStrings:DefaultConnection"]);
 
             return new BrickContext(optionsBuilder.Options);
         }

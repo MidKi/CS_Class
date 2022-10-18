@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace MyBrick
 {
-    class BrickAvailability
+    class BrickAvailability //on ne doit que rajouter les classes d'association si on veut rajouter des attributs
     {
         public int Id { get; set; }
 
-        [Column(TypeName = "deciaml(8, 2)")] //8 digits dont 2 après virgule max
+        [Column(TypeName = "decimal(8, 2)")] //8 digits dont 2 après virgule max
         public decimal Price { get; set; }
 
         public int Quantity { get; set; }
