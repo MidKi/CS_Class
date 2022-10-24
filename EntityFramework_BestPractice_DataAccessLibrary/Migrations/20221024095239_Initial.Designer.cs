@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EntityFramework_BestPractice_DataAccessLibrary.Migrations
 {
     [DbContext(typeof(PeopleContext))]
-    [Migration("20221024094904_Initial")]
+    [Migration("20221024095239_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -92,9 +92,6 @@ namespace EntityFramework_BestPractice_DataAccessLibrary.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<int>("Age")
-                        .HasColumnType("int");
 
                     b.Property<string>("FirstName")
                         .IsRequired()

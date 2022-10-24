@@ -6,7 +6,7 @@ namespace EntityFramework_BestPractice_DataAccessLibrary.Migrations
 {
     public partial class Initial : Migration
     {
-        protected override void Up(MigrationBuilder migrationBuilder)   //up = modifications appliquées e ajout dans la db
+        protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
                 name: "People",
@@ -15,8 +15,7 @@ namespace EntityFramework_BestPractice_DataAccessLibrary.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     FirstName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    Age = table.Column<int>(type: "int", nullable: false)
+                    LastName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -75,7 +74,7 @@ namespace EntityFramework_BestPractice_DataAccessLibrary.Migrations
                 column: "PersonId");
         }
 
-        protected override void Down(MigrationBuilder migrationBuilder) //suppressions dans la db
+        protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
                 name: "Addresses");
