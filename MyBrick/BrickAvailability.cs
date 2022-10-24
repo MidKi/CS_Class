@@ -11,7 +11,7 @@ namespace MyBrick
     {
         public int Id { get; set; }
 
-        [Column(TypeName = "decimal(8, 2)")] //8 digits dont 2 après virgule max
+        [Column(TypeName = "decimal(8, 2)")] //8 digits dont 2 après virgule max, permet de garder la valeur exacte et éviter d'arondir
         public decimal Price { get; set; }
 
         public int Quantity { get; set; }
