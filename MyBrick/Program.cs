@@ -14,7 +14,8 @@ using var context = factory.CreateDbContext(); //le using sert à fermer correct
 
 //await AddData();
 //await QueryData();
-await QueryData2();
+//await QueryData2();
+await QueryData3();
 
 //récupérer les briques, leur disponibilité et les prix chez les différents vendeurs
 async Task QueryData()
@@ -61,6 +62,19 @@ async Task QueryData2()
     }
 }
 
+//chargement après coup (???)
+async Task QueryData3()
+{
+    var simpleBricks = await context.Bricks.ToArrayAsync();
+
+    foreach(var item in simpleBricks)
+    {
+        //utilse si les données changent souvent/compléter une information manquante
+        await context.Entry(item).Collection(i => i.Tags).LoadAsync(); //pour chaque élément parcouru, chercher les tags correspondant et
+        Console.WriteLine($"{item.Title}");                            //les rajouter dans la mémoire
+        Console.WriteLine($"{string.Join(',', item.Tags.Select(t => t.Title))}");
+    }
+}
 
 async Task AddData()
 {
