@@ -1,12 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using System;
-using System.Collections.Generic;
+using Microsoft.Extensions.Logging;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MyBrick
 {
@@ -53,7 +49,9 @@ namespace MyBrick
 
             var optionsBuilder = new DbContextOptionsBuilder<BrickContext>();
 
-            optionsBuilder.UseSqlServer(config["ConnectionStrings:DefaultConnection"]);
+            optionsBuilder
+                .UseLoggerFactory(LoggerFactory.Create(optionsBuilder => optionsBuilder.AddConsole()))
+                .UseSqlServer(config["ConnectionStrings:DefaultConnection"]);
 
             return new BrickContext(optionsBuilder.Options);
         }

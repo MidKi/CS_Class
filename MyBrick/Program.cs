@@ -12,6 +12,56 @@ var factory = new BrickContextFabric();
 using var context = factory.CreateDbContext(); //le using sert à fermer correctement ce qui se trouve derrière le = lorque le programme se
                                                //ferme
 
+//await AddData();
+//await QueryData();
+await QueryData2();
+
+//récupérer les briques, leur disponibilité et les prix chez les différents vendeurs
+async Task QueryData()
+{
+    var availabilityData = await context.BrickAvailabilities
+        .Include(ba => ba.Brick)
+        .Include(ba => ba.Vendor)
+        .ToArrayAsync();
+
+    foreach(var item in availabilityData)
+    {
+        Console.WriteLine($"Brick {item.Brick.Title} available at {item.Vendor.VendorName} for {item.Price}");
+    }
+}
+
+//récupérer liste des briques avec les vendeurs de cette brique et les tags de cette brique
+async Task QueryData2()
+{
+    var availabilityData = await context.Bricks
+        .Include(ab => ab.Tags)
+        //manuel
+        //.Include("Availability.Vendor") //manual string navigation property path -> facile de faire une faute de frappe
+        
+        //semi assisté, mieux mais ça pique un peu
+        //.Include($"{nameof(Brick.Availabilities)}.{nameof(BrickAvailability.Vendor)}")
+        
+        //méthode d'extension, meilleur et lisible
+        .Include(b => b.Availabilities)
+        .ThenInclude(a => a.Vendor) //theninclude se répercute sur le résultat du include, pas sur le résultat total (???)
+        .ToArrayAsync();
+
+    /*pour inclure le vendeurs àpd de BA
+     * string path
+     *      à la main
+     *      semi assisté
+     *      méthode d'extension
+     */
+
+    foreach (var item in availabilityData)
+    {
+        Console.WriteLine($"Bricks {item.Title}");
+        Console.WriteLine($"{String.Join(',', item.Tags.Select(t => t.Title))}");
+        Console.WriteLine($"is available at {String.Join(',', item.Availabilities.Select(b => b.Vendor.VendorName))}");
+    }
+}
+
+
 async Task AddData()
 {
     //on crée des pointeurs pour que ça soit moins chiant après pour les référencer
@@ -45,6 +95,7 @@ async Task AddData()
         {
             new() { Vendor = brickLink, Quantity = 5, Price = 6.5m },   //m spécifie qu'on travaille avec les décimales
             new() { Vendor = hotBrickes, Quantity = 10, Price = 5.9m }
+            //si on met brickLink ici, EF fait le lien automatiquement et le brickId est automatiquement recherché
         }
     });
 
