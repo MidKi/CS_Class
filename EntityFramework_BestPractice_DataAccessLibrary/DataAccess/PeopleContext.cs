@@ -16,7 +16,7 @@ namespace EFDataAccessLibrary.DataAccess
 
     public class PeopleContextFactory : IDesignTimeDbContextFactory<PeopleContext>
     {
-        public PeopleContext CreateDbContext(string[] args)
+        public PeopleContext CreateDbContext(string[] args = null)
         {
             var configuration = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 
